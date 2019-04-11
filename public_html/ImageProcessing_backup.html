@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+
+
+	<head>
+	<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+		<style>
+
+		p{
+		margin-bottom: 1.5cm;
+		}
+		</style>
+
+		<title>Online Image Processing</title>
+	</head>
+	
+	<body>
+	<div class="alert alert-primary" role="alert">
+		<h1>Online Image Processing</h1>
+	</div>
+	
+	<div class="input-group mb-3">
+		<div class="custom-file">
+			<label class="custom-file-label" for="inputfile">Choose file</label>
+			<input type="file" class="custom-file-input" id="inputfile" multiple>		
+		</div>
+	</div>
+	
+	
+	
+	
+<div id="list" class="form-control"></div>
+
+<script>
+	var files
+	var output="";
+	
+  function FileSelect(evt) {
+    files = evt.target.files; // FileList object
+	//console.log(files);
+    // files is a FileList of File objects. List some properties.
+    
+	output="";
+    for (var i = 0, f; f = files[i]; i++) {
+      output= output+'<strong>'+ escape(f.name)+'</strong><br>';
+	  
+
+    }
+    document.getElementById('list').innerHTML = output;
+	
+	
+	
+  }
+
+  document.getElementById('inputfile').addEventListener('change', FileSelect, false);
+
+
+
+	function GetImageSize() {
+		console.log("loaded");
+		document.getElementById('list').innerHTML = output + " W: "+OriginalImage.width +" H: "+ OriginalImage.height;
+		
+
+		//automaticly set the crop parameters.
+
+			document.getElementById('X_min').value=0;
+			document.getElementById('X_max').value=OriginalImage.width;
+			document.getElementById('Y_min').value=0;
+			document.getElementById('Y_max').value=OriginalImage.height;
+
+		
+	}
+	
+
+  
+</script>
+
+<br>
+
+<!-- <canvas id="myCanvas" width="300" height="400" style="border:1px solid #d3d3d3;"> -->
+<!-- Your browser does not support the HTML5 canvas tag.</canvas> -->
+<img src="./nebraska-n.png" id="DisplayImage" class="img-fluid">
+
+<script>
+	var reader= new FileReader();
+	var OriginalImage=new Image();
+	
+	OriginalImage.onload= GetImageSize;
+	//OriginalImage.src=DisplayImage.src;
+	
+	reader.onloadend = function (){
+		
+		//var image=images[CurrentIndex];
+		var DisplayImage=document.getElementById('DisplayImage');
+		DisplayImage.src= reader.result;
+		OriginalImage.src=DisplayImage.src;
+		
+	}
+	var CurrentIndex=0;
+
+function Display() {
+
+
+
+		//CurrentIndex+=1;
+		var f=files[CurrentIndex];
+		reader.readAsDataURL(f);
+
+}
+
+function Previous() {
+	
+	CurrentIndex--;
+	if (CurrentIndex<0){
+	
+		CurrentIndex=files.length-1;
+	}		
+	Display();
+}
+
+function Next() {
+	CurrentIndex++;
+	if (CurrentIndex>files.length-1){
+	
+		CurrentIndex=1;
+	}
+
+	Display();
+}
+
+</script>
+<br>
+<button type="button" class="btn btn-primary" onclick="Display()">Display</button>
+<button type="button" class="btn btn-primary" onclick="Previous()">Previous</button>	
+<button type="button" class="btn btn-primary" onclick="Next()">Next</button>		
+
+<br>
+<p></p>	
+	
+
+<script>
+var canvas = document.createElement("canvas");
+var CropImage=new Image();
+function imageCrop() {
+	
+	var width=OriginalImage.width;
+	var height=OriginalImage.height;
+    canvas.width = width;
+    canvas.height = height;
+	console.log(width);
+	console.log(height);
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(OriginalImage,0,0);
+
+
+
+	var x1=document.getElementById('X_min').value;
+	var x2=document.getElementById('X_max').value;
+	var y1=document.getElementById('Y_min').value;
+	var y2=document.getElementById('Y_max').value;
+		
+	
+	
+	x1=parseInt(x1);
+	x2=parseInt(x2);
+	y1=parseInt(y1);
+	y2=parseInt(y2);
+	
+	x1=Math.max(x1,0); x1=Math.min(x1,width);
+	x2=Math.max(x2,0); x2=Math.min(x2,width);
+	y1=Math.max(y1,0); y1=Math.min(y1,height);
+	y2=Math.max(y2,0); y2=Math.min(y2,height);
+	
+	
+	console.log(x1,x2,y1,y2);
+	
+	document.getElementById('X_min').value=x1;
+	document.getElementById('X_max').value=x2;
+	document.getElementById('Y_min').value=y1;
+	document.getElementById('Y_max').value=y2;
+	
+	var map = ctx.getImageData(x1,y1,x2,y2);
+    var imdata = map.data;
+	
+	//ctx.clearRect(0, 0, canvas.width, canvas.height);
+	canvas.width = x2-x1;
+    canvas.height = y2-y1;
+    ctx.putImageData(map,0,0);
+	var DisplayImage = document.getElementById('DisplayImage');
+	
+	
+    DisplayImage.src = canvas.toDataURL();
+	
+	
+	CropImage.src=DisplayImage.src;
+	
+	
+	
+	
+	//automaticly set binarize parameters
+	
+	document.getElementById('Red_min').value=0;
+	document.getElementById('Red_max').value=255;
+	document.getElementById('Green_min').value=0;
+	document.getElementById('Green_max').value=150;
+	document.getElementById('Blue_min').value=0;
+	document.getElementById('Blue_max').value=255;
+	
+	document.getElementById('RG_min').value=-255;
+	document.getElementById('RG_max').value=20;
+	document.getElementById('GB_min').value=-255;
+	document.getElementById('GB_max').value=255;
+	
+	
+	
+}
+
+ 
+  
+</script>
+ 
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">X_min</span>
+		</div>
+		<input type="text" class="form-control" id="X_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">X_max</span>
+		</div>
+		<input type="text" class="form-control" id="X_max">
+	</div>
+
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Y_min</span>
+		</div>		
+		<input type="text" class="form-control" id="Y_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Y_max</span>
+		</div>
+		<input type="text" class="form-control" id="Y_max">
+	</div>
+	
+  <button type="button" class="btn btn-primary" onclick="imageCrop()">Crop</button>	
+
+
+<p></p>
+	
+	
+<script>
+var BinaryImage = new Image();
+
+function imageBinarize() {
+    //var canvas = document.createElement("canvas");
+	
+    //canvas.width = OriginalImage.width;
+    //canvas.height = OriginalImage.height;
+	
+	
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(CropImage,0,0);
+
+    var map = ctx.getImageData(0,0,canvas.width,canvas.height);
+    var imdata = map.data;
+
+    var r,g,b;
+	
+	var r1=document.getElementById('Red_min').value;
+	var r2=document.getElementById('Red_max').value;
+	var g1=document.getElementById('Green_min').value;
+	var g2=document.getElementById('Green_max').value;
+	var b1=document.getElementById('Blue_min').value;
+	var b2=document.getElementById('Blue_max').value;
+	
+	var rg1=document.getElementById('RG_min').value;
+	var rg2=document.getElementById('RG_max').value;
+	var gb1=document.getElementById('GB_min').value;
+	var gb2=document.getElementById('GB_max').value;
+
+	
+	
+	
+	r1=Number(r1);
+	r2=Number(r2);
+	g1=Number(g1);
+	g2=Number(g2);	
+	b1=Number(b1);
+	b2=Number(b2);
+	
+	
+	rg1=Number(rg1);
+	rg2=Number(rg2);
+	gb1=Number(gb1);
+	gb2=Number(gb2);
+	
+	console.log(r1,r2,g1,g2,b1,b2,rg1,rg2,gb1,gb2);
+	
+    for(var p = 0, len = imdata.length; p < len; p+=4) {
+        r = imdata[p]
+        g = imdata[p+1];
+        b = imdata[p+2];
+
+
+		if (!((r >= r1&& r <= r2) && (g >= g1 && g <= g2) && (b >= b1 && b <= b2) && (r-g >=rg1 && r-g <= rg2) && (g-b >=gb1 && g-b <= gb2)))
+		{
+
+            // white = land
+             imdata[p] = 0;
+             imdata[p+1] = 0;
+             imdata[p+2] = 0;                     
+        }                   
+    }
+    ctx.putImageData(map,0,0);
+	var DisplayImage = document.getElementById('DisplayImage');
+	
+	
+    DisplayImage.src = canvas.toDataURL();
+	
+	BinaryImage.src=DisplayImage.src;
+	
+	
+}
+
+ 
+  
+</script>
+	
+
+  
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Red_min</span>
+		</div>
+		<input type="text" class="form-control" id="Red_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Red_max</span>
+		</div>
+		<input type="text" class="form-control" id="Red_max">
+	</div>
+
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Green_min</span>
+		</div>
+		<input type="text" class="form-control" id="Green_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Green_max</span>
+		</div>
+		<input type="text" class="form-control" id="Green_max">
+	</div>
+
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Blue_min</span>
+		</div>
+		<input type="text" class="form-control" id="Blue_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Blue_max</span>
+		</div>
+		<input type="text" class="form-control" id="Blue_max">
+	</div>
+	
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">R-G_min</span>
+		</div>
+		<input type="text" class="form-control" id="RG_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">R-G_max</span>
+		</div>
+		<input type="text" class="form-control" id="RG_max">
+	</div>
+
+	<div class="input-group mb-3">	
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">G-B_min</span>
+		</div>
+		<input type="text" class="form-control" id="GB_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">G-B_max</span>
+		</div>
+		<input type="text" class="form-control" id="GB_max">
+	</div>
+	
+  <button type="button" class="btn btn-primary" onclick="imageBinarize()">Binarize</button>	
+
+
+
+
+<script>
+var Text;
+
+//function getColorIndicesForCoord(x, y, width) {
+  //var red = y * (width * 4) + x * 4;
+  //return [red, red + 1, red + 2, red + 3];
+//}
+
+function imagePixel() {
+    //var canvas = document.createElement("canvas");
+	
+    //canvas.width = OriginalImage.width;
+    //canvas.height = OriginalImage.height;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(BinaryImage,0,0);
+
+    var map = ctx.getImageData(0,0,canvas.width,canvas.height);
+    var imdata = map.data;
+	//var SumR=0;
+	var SumG=0;
+	//var SumB=0;
+	
+	var Count=0;
+	//var CountR=0;
+	//var CountG=0;
+	//var CountB=0;
+	
+	var Width=0;
+	var Height=0;
+	var ColumnSum;
+	var RowSum;
+	var greenIndex;
+    for (var x=0;x<canvas.width;x++) {
+		ColumnSum=0;
+		for (var y=0;y<canvas.height;y++){
+			//coords=getColorIndicesForCoord(x,y,canvas.width);
+			//greenIndex=coords[1];
+			greenIndex=y*canvas.width*4 + x*4 + 1;
+			ColumnSum+=imdata[greenIndex];
+		
+		}
+		
+		if (ColumnSum>0){
+			Width+=1;		
+		}
+                   
+    }
+	
+	for (var y=0;y<canvas.height;y++) {
+		RowSum=0;
+		for (var x=0;x<canvas.width;x++){
+			//coords=getColorIndicesForCoord(x,y,canvas.width);
+			//greenIndex=coords[1];
+			greenIndex=y*canvas.width*4 + x*4 + 1;
+			RowSum+=imdata[greenIndex];		
+		}
+		
+		if (RowSum>0){
+			Height+=1;		
+		}
+                   
+    }
+	
+	
+	
+	
+	for(var p = 0, len = imdata.length; p < len; p+=4) {
+        //r = imdata[p]
+        g = imdata[p+1];
+        //b = imdata[p+2];
+		
+		//if (r+g+b > 0)
+		if (g > 0)
+		{
+			//SumR+=r;
+			//CountR+=1;
+			
+			SumG+=g;
+			//CountG+=1;
+
+			//SumB+=b;
+			//CountB+=1;
+			Count+=1;
+		}
+                   
+    }
+	
+	
+	
+	
+	
+	/////////////////////Display results
+	var f=files[CurrentIndex];
+	var pixelSum="&emsp;PixelSum: &emsp;" + SumG + "<br>";
+	var pixelCount="&emsp;PixelCount: &emsp;" + Count + "<br>";
+	var pixelWidth="&emsp;Width: &emsp;" + Width + "<br>";
+	var pixelHeight="&emsp;Height: &emsp;" + Height + "<br>";
+	document.getElementById('pixelValues').innerHTML = "<b>SINGLE MODE</b><br>"+f.name+"<br>"+pixelSum + pixelCount + pixelWidth + pixelHeight;
+	 
+	 Text="";
+	 Text=Text+"Filename,PixelSum,PixelCount,Width,Height\n";
+	 Text=Text+f.name+","+SumG+","+Count+","+Width+","+Height+"\n";
+}
+
+ 
+  
+</script>
+
+<script>
+//Download Text file
+
+function TextFile(text) {
+    var data = new Blob([text], {type: 'text/plain'});
+
+    // If we are replacing a previously generated file we need to
+    // manually revoke the object URL to avoid memory leaks.
+    // (textFile !== null) {
+      //window.URL.revokeObjectURL(textFile);
+    //}
+
+    var textFile = window.URL.createObjectURL(data);
+	
+	return textFile;
+	}
+	
+function DownloadData() {
+
+	var textFile=TextFile(Text);
+	
+	//var Button= document.getElementById('Download');
+	
+	var f=files[CurrentIndex];
+	var FileName=f.name;
+	FileName = FileName.substring(0, FileName.lastIndexOf('.'));
+	
+	var downloadLink = document.createElement("a");
+    downloadLink.download = FileName+".csv";
+    downloadLink.innerHTML = "Download File";
+    //downloadLink.href = textFile;
+	downloadLink.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(Text));
+
+    //downloadLink.onclick = destroyClickedElement;
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink); 
+    downloadLink.click();
+	document.body.removeChild(downloadLink);
+}
+
+
+</script>
+
+<script>
+//batach image processing
+
+
+function BatchImagePixel(){
+
+	var BatchIndex=0;
+	var BatchReader= new FileReader();
+	var BatchImage=new Image();
+	
+	BatchReader.onloadend = function (){
+		BatchImage.src= BatchReader.result;
+		
+	}
+	BatchImage.onload = function (){
+		
+		var BatchCanvas=document.createElement("canvas");
+		var width=BatchImage.width;
+		var height=BatchImage.height;
+		BatchCanvas.width = width;
+		BatchCanvas.height = height;
+		//console.log(width);
+		//console.log(height);
+		var ctx = BatchCanvas.getContext("2d");
+		ctx.drawImage(BatchImage,0,0);
+
+		
+		
+		var x1=document.getElementById('X_min').value;
+		var x2=document.getElementById('X_max').value;
+		var y1=document.getElementById('Y_min').value;
+		var y2=document.getElementById('Y_max').value;
+		
+		x1=parseInt(x1);
+		x2=parseInt(x2);
+		y1=parseInt(y1);
+		y2=parseInt(y2);
+		
+		
+		var map = ctx.getImageData(x1,y1,x2,y2);
+		var imdata = map.data;
+		
+		
+		var r,g,b;
+	
+		var r1=document.getElementById('Red_min').value;
+		var r2=document.getElementById('Red_max').value;
+		var g1=document.getElementById('Green_min').value;
+		var g2=document.getElementById('Green_max').value;
+		var b1=document.getElementById('Blue_min').value;
+		var b2=document.getElementById('Blue_max').value;
+		
+		var rg1=document.getElementById('RG_min').value;
+		var rg2=document.getElementById('RG_max').value;
+		var gb1=document.getElementById('GB_min').value;
+		var gb2=document.getElementById('GB_max').value;
+
+		
+		
+		
+		r1=Number(r1);
+		r2=Number(r2);
+		g1=Number(g1);
+		g2=Number(g2);	
+		b1=Number(b1);
+		b2=Number(b2);
+		
+		
+		rg1=Number(rg1);
+		rg2=Number(rg2);
+		gb1=Number(gb1);
+		gb2=Number(gb2);
+	
+		console.log(r1,r2,g1,g2,b1,b2,rg1,rg2,gb1,gb2);
+	
+		var BatchSumG=0;
+		var BatchCount=0;
+	
+		for(var p = 0, len = imdata.length; p < len; p+=4) {
+			r = imdata[p]
+			g = imdata[p+1];
+			b = imdata[p+2];
+
+
+			if ((r >= r1&& r <= r2) && (g >= g1 && g <= g2) && (b >= b1 && b <= b2) && (r-g >=rg1 && r-g <= rg2) && (g-b >=gb1 && g-b <= gb2))
+			{
+
+				// white = land
+				if (g>0) {
+				
+					BatchSumG+=g;
+					BatchCount+=1;
+				}
+			}
+			else
+			{
+				imdata[p]=0;
+				imdata[p+1]=0;
+				imdata[p+2]=0;
+			}
+			
+		}
+		
+		
+		
+		
+		var Width=0;
+		var Height=0;
+		var ColumnSum;
+		var RowSum;
+		var greenIndex;
+		for (var x=0;x<x2-x1;x++) {
+			ColumnSum=0;
+			for (var y=0;y<y2-y1;y++){
+				//coords=getColorIndicesForCoord(x,y,canvas.width);
+				//greenIndex=coords[1];
+				greenIndex=y*(x2-x1)*4 + x*4 + 1;
+				ColumnSum+=imdata[greenIndex];
+
+			}
+
+			if (ColumnSum>0){
+				Width+=1;		
+			}
+			   
+		}
+
+		for (var y=0;y<y2-y1;y++) {
+			RowSum=0;
+			for (var x=0;x<x2-x1;x++){
+				//coords=getColorIndicesForCoord(x,y,canvas.width);
+				//greenIndex=coords[1];
+				greenIndex=y*(x2-x1)*4 + x*4 + 1;
+				RowSum+=imdata[greenIndex];		
+			}
+
+			if (RowSum>0){
+				Height+=1;		
+			}
+			   
+		}
+
+		
+		
+		var f=files[BatchIndex];
+		var pixelSum="&emsp;PixelSum: &emsp;" + BatchSumG + "<br>";
+		var pixelCount="&emsp;PixelCount: &emsp;" + BatchCount + "<br>";
+		var pixelWidth="&emsp;Width: &emsp;" + Width + "<br>";
+		var pixelHeight="&emsp;Height: &emsp;" + Height + "<br>";
+		document.getElementById('pixelValues').innerHTML = document.getElementById('pixelValues').innerHTML + f.name+"<br>"+pixelSum + pixelCount + pixelWidth + pixelHeight;
+
+		Text=Text+f.name+","+BatchSumG+","+BatchCount+","+Width+","+Height+"\n";
+		
+		
+		BatchIndex+=1;
+		if (BatchIndex<files.length)
+		{
+			
+			console.log(BatchIndex);
+			f=files[BatchIndex];
+			//console.log(f);
+			BatchReader.readAsDataURL(f);
+		}
+	}	
+	
+	
+	
+		
+		
+		document.getElementById('pixelValues').innerHTML="<b>BATCH MODE</b><br>";
+		
+		Text="";
+		//Text=Text+"Filename,PixelSum,PixelCount\n";
+		Text=Text+"Filename,PixelSum,PixelCount,Width,Height\n";
+		
+		var f;
+
+		f=files[BatchIndex];
+		BatchReader.readAsDataURL(f);
+		
+
+
+
+
+}
+
+
+
+</script>
+	
+	
+<p> </p>
+
+
+	<div class="alert alert-info" role="alert">
+		<h2>Get Pixel Values</h2>
+	</div>
+<form>
+	<button type="button" class="btn btn-primary" onclick="imagePixel()">Single</button>
+	<button type="button" class="btn btn-primary" onclick="BatchImagePixel()">Batch</button>
+	<button type="button" class="btn btn-primary" onclick="DownloadData()" id="Download">Download</button>	
+	
+	<ul class="list-group">
+		<li class="list-group-item" id="pixelValues"></li>
+	</ul>
+</form>
+
+
+	
+
+	
+	
+	
+	
+	
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+ 
+</body>
+</html>

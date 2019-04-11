@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+img.normal {
+    width: auto;
+}
+
+img.scale {
+    width: 100%;
+}
+
+img.half {
+    width: 50%;
+}
+</style>
+</head>
+<body>
+<p>
+Steps:<br>
+1. Load files<br>
+2. Select the  ROI<br>
+3. Apply the filter<br>
+4. Select functions(sample functions are included in the installation file)</a><br>
+5. Generate code for HCC<br>
+6. Execute for all images<br>
+7. Save results<br>
+</p>
+
+
+
+
+
+<p>Path should be a regular expression for the image files. * can be used to represent characters
+(e.g. C:\*\Vis_SV_*\*.png).</p>
+<p>Slider can be used to select the image that is shown. </p>
+<p>Filter operation should be a logical operation for RGB or HSV channels (e.g. 
+g<150 & g>r+20 & g>50 )</p>
+
+<h2>Instructions for Job Submission on HCC</h2>
+<p></p>
+1. Save the generated code (e.g. as imageHCC.m);The program will generate a text file containing all the image names (e.g. ls 
+*maize*/Vis_SV*/*.png > filenames.txt);<br>
+2. Use the included .slurm file to submit all the jobs on HCC.<br>
+
+</p>
+<p><a href="PhenoImage_V3.mlappinstall">MATLAB Application (Ver. 3.0)</a></p>
+
+<p><a href="PhenoImage_V4.mlappinstall">MATLAB Application (Ver. 4.0, Oct. 25)</a></p>
+<img class="scale" src="PhenoImage.PNG">
+</body>
+</html>

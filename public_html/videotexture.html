@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<script src='three.js'></script>
+<script src='stats.min.js'></script>
+<script src='threex.videotexture.js'></script>
+<title>Interactive Visual Geophysical Analysis</title>
+
+<div style='position: absolute; top: 0px; width: 100%;font-family:arial; font-weight: bolder; padding-top: 5px;text-align: center;'>
+	<button onclick='onVideoPlayButtonClick()'>play</button>
+	<button onclick='onVideoPauseButtonClick()'>pause</button>
+	</div>.
+<body>
+<script>
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Init
+	//////////////////////////////////////////////////////////////////////////////////
+	var mouseXOnMouseDown = 0;
+	var mouseX = 0;	
+	var targetRotationOnMouseDown = 0;
+	var targetRotation = 0
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;	
+	
+				function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+	
+	
+	
+	// init renderer
+	var renderer	= new THREE.WebGLRenderer({
+		antialias	: true,
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 1)
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+	window.addEventListener( 'resize', onWindowResize, false );
+	var updateFcts	= [];
+	var scene	= new THREE.Scene();
+	var camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 100 );
+	camera.position.z = 20;
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		add an object and make it move					//
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// find out which file formats i can read
+		var url	= 'movie/movie_14days.mp4'
+
+
+	// create the videoTexture
+	var videoTexture= new THREEx.VideoTexture(url)
+	var video	= videoTexture.video
+	updateFcts.push(function(delta, now){
+		videoTexture.update(delta, now)
+	})
+	
+	// use the texture in a THREE.Mesh
+	//var geometry	= new THREE.CubeGeometry(12,8,1);
+	var geometry	= new THREE.BoxGeometry(12,0.1,7);
+	var material	= new THREE.MeshBasicMaterial({
+		map	: videoTexture.texture
+	});
+		//var Stexture=new THREE.ImageUtils.loadTexture('brick.jpg');
+		//var Mtexture=new THREE.ImageUtils.loadTexture('brick_roughness.jpg');
+		var materials=[];
+		materials.push(new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));//right
+		materials.push(new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));//left
+		materials.push(new THREE.MeshBasicMaterial({map:videoTexture.texture,color:0xffffff}));//up
+		materials.push(new THREE.MeshBasicMaterial({map:videoTexture.texture,color:0xffffff}));//down
+		materials.push(new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));//front
+		materials.push(new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));//back
+	
+	
+	var cubeMaterial = new THREE.MeshFaceMaterial(materials);
+	
+	
+	var mesh	= new THREE.Mesh( geometry, cubeMaterial );
+	scene.add( mesh );
+	updateFcts.push(function(delta, now){
+		mesh.rotation.x += 0.05 * (targetRotation-mesh.rotation.x);
+		//mesh.rotation.y = 30;		
+	})
+
+
+	function onVideoPlayButtonClick(){
+		video.play()
+	}
+	function onVideoPauseButtonClick(){
+		video.pause()
+	}
+
+
+
+	// init Stats
+	var stats	= new Stats();
+	document.body.appendChild( stats.domElement );
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.left	= '0px';
+	stats.domElement.style.bottom	= '0px';
+	updateFcts.push(function(){
+		stats.update()
+	})
+
+	
+	updateFcts.push(function(){
+		renderer.render( scene, camera );		
+	})
+	document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+	document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+	document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.addEventListener( 'mouseout', onDocumentMouseOut, false );
+
+				mouseXOnMouseDown = event.clientX - windowHalfX;
+				targetRotationOnMouseDown = targetRotation;
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = event.clientX - windowHalfX;
+
+				targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.02;
+
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+
+			}
+
+			function onDocumentMouseOut( event ) {
+
+				document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+
+			}
+
+			function onDocumentTouchStart( event ) {
+
+				if ( event.touches.length === 1 ) {
+
+					event.preventDefault();
+					video.play();
+					mouseXOnMouseDown = event.touches[ 0 ].pageX - windowHalfX;
+					targetRotationOnMouseDown = targetRotation;
+
+				}
+
+			}
+
+			function onDocumentTouchMove( event ) {
+
+				if ( event.touches.length === 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.05;
+
+				}
+
+			}
+	
+	
+	
+	
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//		loop runner							//
+	//////////////////////////////////////////////////////////////////////////////////
+	var lastTimeMsec= null
+	requestAnimationFrame(function animate(nowMsec){
+		// keep looping
+		requestAnimationFrame( animate );
+		// measure time
+		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
+		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
+		lastTimeMsec	= nowMsec
+		// call each update function
+		updateFcts.forEach(function(updateFn){
+			updateFn(deltaMsec/1000, nowMsec/1000)
+		})
+	})
+</script></body>

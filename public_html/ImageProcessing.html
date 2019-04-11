@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+
+
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+	 crossorigin="anonymous">
+
+
+	<style>
+
+		p{
+		margin-bottom: 1.5cm;
+		}
+		
+	</style>
+
+
+<!--  <style>-->
+<!--        canvas{-->
+<!--               background-color:#000066; -->
+<!--               }-->
+
+<!--  </style>-->
+
+	<title>Online Image Processing</title>
+</head>
+
+<body>
+	<div class="alert alert-primary" role="alert">
+		<h1>Online Image Processing</h1>
+	</div>
+
+	<div class="input-group mb-3">
+
+		<div class="custom-file">
+			<label class="custom-file-label" for="inputfile">Choose file</label>
+			<input type="file" class="custom-file-input" id="inputfile" multiple>
+		</div>
+	</div>
+
+	<!-- 	<div class="checkbox">
+		<label><input type="checkbox" id="Rotation_checkBox" >Rotation</label>
+	</div> -->
+
+
+	<!--<link rel="stylesheet" href="jquery.Jcrop.css">	
+<script src="jquery-3.3.1.js"></script>
+<script src="jquery.Jcrop.js"></script> -->
+
+
+	<script src="exif.js"></script>
+
+	<div id="list" class="form-control"></div>
+
+	<br>
+
+	<!-- <canvas id="myCanvas" width="300" height="400" style="border:1px solid #d3d3d3;"> -->
+	<!-- Your browser does not support the HTML5 canvas tag.</canvas> -->
+	<div id="allMetaDataSpan" class="form-control"></div>
+
+<!--	<img src="http://cse.unl.edu/~fzhu/nebraska-n.png" id="DisplayImage" class="img-thumbnail">-->
+<canvas id="DisplayCanvas" class="img-thumbnail"></canvas>
+
+
+	<br>
+	<button type="button" class="btn btn-primary" onclick="Display()">Display</button>
+	<button type="button" class="btn btn-primary" onclick="Previous()">Previous</button>
+	<button type="button" class="btn btn-primary" onclick="Next()">Next</button>
+
+	<br>
+	<p></p>
+
+
+
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">X_min</span>
+		</div>
+		<input type="text" class="form-control" id="X_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">X_max</span>
+		</div>
+		<input type="text" class="form-control" id="X_max">
+	</div>
+
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Y_min</span>
+		</div>
+		<input type="text" class="form-control" id="Y_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Y_max</span>
+		</div>
+		<input type="text" class="form-control" id="Y_max">
+	</div>
+
+	<!--   <button type="button" class="btn btn-primary" onclick="imageSet()">Set</button> -->
+	<button type="button" class="btn btn-primary" onclick="imageCrop()">Crop</button>
+
+
+	<p></p>
+
+
+
+
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Hue_min</span>
+		</div>
+		<input type="text" class="form-control" id="Hue_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Hue_max</span>
+		</div>
+		<input type="text" class="form-control" id="Hue_max">
+	</div>
+
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Saturation_min</span>
+		</div>
+		<input type="text" class="form-control" id="Saturation_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Saturation_max</span>
+		</div>
+		<input type="text" class="form-control" id="Saturation_max">
+	</div>
+
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Value_min</span>
+		</div>
+		<input type="text" class="form-control" id="Value_min">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="inputGroup-sizing-default">Value_max</span>
+		</div>
+		<input type="text" class="form-control" id="Value_max">
+	</div>
+
+
+	<button type="button" class="btn btn-primary" onclick="imageBinarize()">Segment</button>
+
+
+
+
+
+
+
+	<p> </p>
+
+
+	<div class="alert alert-info" role="alert">
+		<h2>Get Pixel Values</h2>
+	</div>
+	<form>
+		<button type="button" class="btn btn-primary" onclick="imagePixel()">Single</button>
+		<button type="button" class="btn btn-primary" onclick="BatchImagePixel()">Batch</button>
+		<button type="button" class="btn btn-primary" onclick="DownloadData()" id="Download">Download</button>
+
+		<ul class="list-group">
+			<li class="list-group-item" id="pixelValues"></li>
+		</ul>
+	</form>
+
+
+	<script src="ImageProcessing.js"></script>
+
+
+
+
+
+
+	<!-- Optional JavaScript -->
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+	 crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+	 crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+	 crossorigin="anonymous"></script>
+
+</body>
+
+</html>

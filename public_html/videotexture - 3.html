@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<script src='three.js'></script>
+<script src='stats.min.js'></script>
+<script src='threex.videotexture.js'></script>
+
+<body style='margin: 0px; overflow: hidden; text-align:center;'><script>
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Init
+	//////////////////////////////////////////////////////////////////////////////////
+
+				function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+	
+	
+	
+	// init renderer
+	var renderer	= new THREE.WebGLRenderer({
+		antialias	: true,
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 1)
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+	window.addEventListener( 'resize', onWindowResize, false );
+	var updateFcts	= [];
+	var scene	= new THREE.Scene();
+	var camera	= new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 100 );
+	camera.position.z = 20;
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		add an object and make it move					//
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// find out which file formats i can read
+		var url	= 'movie_14days.mp4'
+
+
+	// create the videoTexture
+	var videoTexture= new THREEx.VideoTexture(url)
+	var video	= videoTexture.video
+	updateFcts.push(function(delta, now){
+		videoTexture.update(delta, now)
+	})
+	
+	// use the texture in a THREE.Mesh
+	//var geometry	= new THREE.CubeGeometry(12,8,1);
+	var geometry	= new THREE.BoxGeometry(12,0.1,7);
+	var material	= new THREE.MeshBasicMaterial({
+		map	: videoTexture.texture
+	});
+		//var Stexture=new THREE.ImageUtils.loadTexture('brick.jpg');
+		//var Mtexture=new THREE.ImageUtils.loadTexture('brick_roughness.jpg');
+		var materials=[];
+		materials.push(new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));//right
+		materials.push(new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));//left
+		materials.push(new THREE.MeshBasicMaterial({map:videoTexture.texture,color:0xffffff}));//up
+		materials.push(new THREE.MeshBasicMaterial({map:videoTexture.texture,color:0xffffff}));//down
+		materials.push(new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));//front
+		materials.push(new THREE.MeshBasicMaterial({color:0xffffff,transparent:true}));//back
+	
+	
+	var cubeMaterial = new THREE.MeshFaceMaterial(materials);
+	
+	
+	var mesh	= new THREE.Mesh( geometry, cubeMaterial );
+	scene.add( mesh );
+	updateFcts.push(function(delta, now){
+		mesh.rotation.x += 0.1 * delta;
+		mesh.rotation.y += 0.2 * delta;		
+	})
+
+
+		video.play()
+
+
+
+	// init Stats
+	var stats	= new Stats();
+	document.body.appendChild( stats.domElement );
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.left	= '0px';
+	stats.domElement.style.bottom	= '0px';
+	updateFcts.push(function(){
+		stats.update()
+	})
+
+	
+	updateFcts.push(function(){
+		renderer.render( scene, camera );		
+	})
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//		loop runner							//
+	//////////////////////////////////////////////////////////////////////////////////
+	var lastTimeMsec= null
+	requestAnimationFrame(function animate(nowMsec){
+		// keep looping
+		requestAnimationFrame( animate );
+		// measure time
+		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
+		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
+		lastTimeMsec	= nowMsec
+		// call each update function
+		updateFcts.forEach(function(updateFn){
+			updateFn(deltaMsec/1000, nowMsec/1000)
+		})
+	})
+</script></body>
